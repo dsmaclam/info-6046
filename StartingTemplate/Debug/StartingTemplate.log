@@ -1,0 +1,10 @@
+﻿  FModManager.cpp
+C:\$fmod_demos\StartingTemplate\StartingTemplate\FModManager.cpp(101,35): error C2664: 'FMOD_RESULT FMOD::ChannelControl::setCallback(FMOD_CHANNELCONTROL_CALLBACK)': cannot convert argument 1 from 'FModManager::fmod_channel_group_callback_definition' to 'FMOD_CHANNELCONTROL_CALLBACK'
+C:\$fmod_demos\StartingTemplate\StartingTemplate\FModManager.cpp(101,27): message : This conversion requires a reinterpret_cast, a C-style cast or parenthesized function-style cast
+C:\$fmod_demos\StartingTemplate\inc\FMOD\fmod.hpp(287,27): message : see declaration of 'FMOD::ChannelControl::setCallback'
+  main.cpp
+C:\$fmod_demos\StartingTemplate\StartingTemplate\main.cpp(114,90): error C2664: 'bool FModManager::play_sound(const std::string &,const std::string &,FMOD::Channel **,FModManager::fmod_channel_group_callback_definition)': cannot convert argument 4 from 'FMOD_RESULT (__stdcall *)(FMOD_CHANNELCONTROL *,FMOD_CHANNELCONTROL_TYPE,const FMOD_CHANNELCONTROL_CALLBACK_TYPE,void *,void *)' to 'FModManager::fmod_channel_group_callback_definition'
+C:\$fmod_demos\StartingTemplate\StartingTemplate\main.cpp(114,68): message : This conversion requires a reinterpret_cast, a C-style cast or parenthesized function-style cast
+C:\$fmod_demos\StartingTemplate\StartingTemplate\FModManager.h(36,7): message : see declaration of 'FModManager::play_sound'
+  OpenGLUtility.cpp
+  Generating Code...
