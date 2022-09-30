@@ -18,6 +18,12 @@ int main(int argc, char* argv[])
 	}
 	glfwMakeContextCurrent(window);
 
+	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+		return 2;
+	}
+
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
 	FModManager fmod_manager;
 
 	//initialize fmod with max channels
@@ -57,7 +63,15 @@ int main(int argc, char* argv[])
 	//game loop
 	while(!glfwWindowShouldClose(window))
 	{
+		//poll for user events
 		glfwPollEvents();
+
+		//clear the back buffer
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		//present to the user
+		glfwSwapBuffers(window);
+		
 	}
 
 	fmod_manager.shutdown();
