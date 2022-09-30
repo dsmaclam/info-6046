@@ -11,6 +11,27 @@ GLFWwindow* window;
 
 constexpr int max_channels = 255;
 
+//initialize our sound manager
+FModManager fmod_manager;
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+	{
+		fmod_manager.play_sound("arrow", "fx");
+	}
+
+	if(key == GLFW_KEY_1 && action == GLFW_PRESS)
+	{
+		fmod_manager.add_dsp_effect("master", "echo");
+	}
+
+	if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+	{
+		fmod_manager.remove_dsp_effect("master", "echo");
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	//initialize glfw/glad
@@ -27,6 +48,8 @@ int main(int argc, char* argv[])
 		return 2;
 	}
 
+	glfwSetKeyCallback(window, key_callback);
+
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
 	//initialize imgui
@@ -42,10 +65,6 @@ int main(int argc, char* argv[])
 
 	//imgui style (dark mode for the win)
 	ImGui::StyleColorsDark();
-
-
-	//initialize our sound manager
-	FModManager fmod_manager;
 
 	//initialize fmod with max channels
 	if (!fmod_manager.initialize(max_channels, FMOD_INIT_NORMAL))
@@ -75,10 +94,21 @@ int main(int argc, char* argv[])
 		return -4;
 	}
 
+	if (!fmod_manager.create_sound("arrow", "./sounds/fx/air_raid.wav", FMOD_DEFAULT))
+	{
+		return -4;
+	}
+
 	//play our bg sound
 	if(!fmod_manager.play_sound("bg", "music"))
 	{
 		return -5;
+	}
+
+	//dsp effects
+	if(!fmod_manager.create_dsp("echo", FMOD_DSP_TYPE_ECHO, 500.0f))
+	{
+		return -6;
 	}
 
 	//create sound ui

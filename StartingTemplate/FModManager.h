@@ -15,6 +15,7 @@ protected:
 
 	std::map<std::string, FMOD::ChannelGroup*> channel_groups_;
 	std::map<std::string, FMOD::Sound*> sounds_;
+	std::map<std::string, FMOD::DSP*> dsps_;
 
 	bool is_okay(const bool show_error = true) const;
 
@@ -33,8 +34,13 @@ public:
 	bool set_channel_group_volume(const std::string& name, float volume);
 	bool get_channel_group_enabled(const std::string& name, bool* enabled);
 	bool set_channel_group_enabled(const std::string& name, bool enabled);
+	bool add_dsp_effect(const std::string& channel_group_name, const std::string& effect_name);
+	bool remove_dsp_effect(const std::string& channel_group_name, const std::string& effect_name);
 
 	//sounds
 	bool create_sound(const std::string& name, const std::string& path, const int mode);
 	bool play_sound(const std::string& sound_name, const std::string& channel_group_name);
+
+	//dsp
+	bool create_dsp(const std::string& name, FMOD_DSP_TYPE dsp_type, const float value);
 };
