@@ -26,8 +26,13 @@ public:
 
 	//channel groups
 	bool create_channel_group(const std::string& name);
+	bool find_channel_group(const std::string& name, FMOD::ChannelGroup** channel_group);
 	void remove_channel_group(const std::string& name);
 	bool set_channel_group_parent(const std::string& child_name, const std::string& parent_name);
+	bool get_channel_group_volume(const std::string& name, float* volume);
+	bool set_channel_group_volume(const std::string& name, float volume);
+	bool get_channel_group_enabled(const std::string& name, bool* enabled);
+	bool set_channel_group_enabled(const std::string& name, bool enabled);
 
 	//sounds
 	bool create_sound(const std::string& name, const std::string& path, const int mode);

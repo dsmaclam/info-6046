@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "SoundUI.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
@@ -80,6 +81,9 @@ int main(int argc, char* argv[])
 		return -5;
 	}
 
+	//create sound ui
+	SoundUI sound_ui(&fmod_manager);
+
 	//game loop
 	while(!glfwWindowShouldClose(window))
 	{
@@ -89,9 +93,17 @@ int main(int argc, char* argv[])
 		//clear the back buffer
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		sound_ui.render();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		//present to the user
 		glfwSwapBuffers(window);
-		
 	}
 
 	fmod_manager.shutdown();

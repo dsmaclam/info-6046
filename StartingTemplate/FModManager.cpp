@@ -65,6 +65,19 @@ bool FModManager::create_channel_group(const std::string& name)
 	return true;
 }
 
+bool FModManager::find_channel_group(const std::string& name, FMOD::ChannelGroup** channel_group)
+{
+	const auto iterator = channel_groups_.find(name);
+	if (iterator == channel_groups_.end())
+	{
+		return false;
+	}
+
+	*channel_group = iterator->second;
+
+	return true;
+}
+
 void FModManager::remove_channel_group(const std::string& name)
 {
 	const auto iterator = channel_groups_.find(name);
@@ -91,6 +104,63 @@ bool FModManager::set_channel_group_parent(const std::string& child_name, const 
 		
 	return true;
 }
+
+bool FModManager::get_channel_group_volume(const std::string& name, float* volume)
+{
+	const auto iterator = channel_groups_.find(name);
+	if (iterator == channel_groups_.end())
+	{
+		return false;
+	}
+
+	return is_okay(iterator->second->getVolume(volume));
+}
+
+bool FModManager::set_channel_group_volume(const std::string& name, float volume)
+{
+	const auto iterator = channel_groups_.find(name);
+	if (iterator == channel_groups_.end())
+	{
+		return false;
+	}
+
+	return is_okay(iterator->second->setVolume(volume));
+}
+
+bool FModManager::get_channel_group_enabled(const std::string& name, bool* enabled)
+{
+	const auto iterator = channel_groups_.find(name);
+	if (iterator == channel_groups_.end())
+	{
+		return false;
+	}
+
+	if(!is_okay(iterator->second->getMute(enabled)))
+	{
+		return false;
+	}
+
+	*enabled = !(*enabled);
+
+	return true;
+}
+
+bool FModManager::set_channel_group_enabled(const std::string& name, bool enabled)
+{
+	const auto iterator = channel_groups_.find(name);
+	if (iterator == channel_groups_.end())
+	{
+		return false;
+	}
+
+	if(!is_okay(iterator->second->setMute(!enabled)))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 
 bool FModManager::create_sound(const std::string& name, const std::string& path, const int mode)
 {
