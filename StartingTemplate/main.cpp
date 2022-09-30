@@ -1,6 +1,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+
 GLFWwindow* window;
 
 #include "FModManager.h"
@@ -9,6 +12,7 @@ constexpr int max_channels = 255;
 
 int main(int argc, char* argv[])
 {
+	//initialize glfw/glad
 	glfwInit();
 	window = glfwCreateWindow(800, 600, "INFO-6064", nullptr, nullptr);
 
@@ -24,6 +28,22 @@ int main(int argc, char* argv[])
 
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
+	//initialize imgui
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+
+	//platform / render bindings
+	if (!ImGui_ImplGlfw_InitForOpenGL(window, true) || !ImGui_ImplOpenGL3_Init("#version 460"))
+	{
+		return 3;
+	}
+
+	//imgui style (dark mode for the win)
+	ImGui::StyleColorsDark();
+
+
+	//initialize our sound manager
 	FModManager fmod_manager;
 
 	//initialize fmod with max channels
@@ -75,6 +95,12 @@ int main(int argc, char* argv[])
 	}
 
 	fmod_manager.shutdown();
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
 	glfwTerminate();
+
 	return 0;
 }

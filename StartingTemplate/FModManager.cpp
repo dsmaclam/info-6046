@@ -6,7 +6,6 @@ bool FModManager::is_okay(const bool show_error) const
 	{
 		printf("fmod error: #%d-%s\n", last_result_, FMOD_ErrorString(last_result_));
 	}
-	
 
 	return last_result_ == FMOD_OK;
 }
@@ -33,6 +32,18 @@ bool FModManager::initialize(const int number_of_channels, const int system_flag
 
 void FModManager::shutdown()
 {
+	for(auto iterator = sounds_.begin(); iterator != sounds_.end(); ++iterator)
+	{
+		iterator->second->release();
+	}
+	sounds_.clear();
+
+	for (auto iterator = channel_groups_.begin(); iterator != channel_groups_.end(); ++iterator)
+	{
+		iterator->second->release();
+	}
+	channel_groups_.clear();
+
 	if(system_)
 	{
 		system_->release();
