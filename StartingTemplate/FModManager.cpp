@@ -45,7 +45,7 @@ void FModManager::shutdown()
 
 	for (auto iterator = channel_groups_.begin(); iterator != channel_groups_.end(); ++iterator)
 	{
-		iterator->second->release();
+		iterator->second->group_ptr->release();
 	}
 	channel_groups_.clear();
 
@@ -65,12 +65,15 @@ bool FModManager::create_channel_group(const std::string& name)
 		return false;
 	}
 
-	channel_groups_.try_emplace(name, channel_group);
+	auto* our_channel_group_with_extra_params = new ChannelGroup();
+	our_channel_group_with_extra_params->group_ptr = channel_group;
+
+	channel_groups_.try_emplace(name, our_channel_group_with_extra_params);
 
 	return true;
 }
 
-bool FModManager::find_channel_group(const std::string& name, FMOD::ChannelGroup** channel_group)
+bool FModManager::find_channel_group(const std::string& name, ChannelGroup** channel_group)
 {
 	const auto iterator = channel_groups_.find(name);
 	if (iterator == channel_groups_.end())
@@ -91,7 +94,7 @@ void FModManager::remove_channel_group(const std::string& name)
 		return;
 	}
 
-	iterator->second->release();
+	iterator->second->group_ptr->release();
 	channel_groups_.erase(iterator);
 }
 
@@ -105,7 +108,7 @@ bool FModManager::set_channel_group_parent(const std::string& child_name, const 
 		return false;
 	}
 
-	last_result_ = parent_group->second->addGroup(child_group->second);
+	last_result_ = parent_group->second->group_ptr->addGroup(child_group->second->group_ptr);
 
 	return true;
 }
@@ -118,7 +121,7 @@ bool FModManager::get_channel_group_volume(const std::string& name, float* volum
 		return false;
 	}
 
-	return is_okay(iterator->second->getVolume(volume));
+	return is_okay(iterator->second->group_ptr->getVolume(volume));
 }
 
 bool FModManager::set_channel_group_volume(const std::string& name, float volume)
@@ -129,7 +132,36 @@ bool FModManager::set_channel_group_volume(const std::string& name, float volume
 		return false;
 	}
 
-	return is_okay(iterator->second->setVolume(volume));
+	return is_okay(iterator->second->group_ptr->setVolume(volume));
+}
+
+bool FModManager::get_channel_group_pan(const std::string& name, float* pan)
+{
+	const auto iterator = channel_groups_.find(name);
+	if (iterator == channel_groups_.end())
+	{
+		return false;
+	}
+
+	*pan = iterator->second->current_pan;
+
+	return true;
+}
+
+bool FModManager::set_channel_group_pan(const std::string& name, const float pan)
+{
+	const auto iterator = channel_groups_.find(name);
+	if (iterator == channel_groups_.end())
+	{
+		return false;
+	}
+
+	if (!is_okay(iterator->second->group_ptr->setPan(pan)))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool FModManager::get_channel_group_enabled(const std::string& name, bool* enabled)
@@ -140,7 +172,7 @@ bool FModManager::get_channel_group_enabled(const std::string& name, bool* enabl
 		return false;
 	}
 
-	if (!is_okay(iterator->second->getMute(enabled)))
+	if (!is_okay(iterator->second->group_ptr->getMute(enabled)))
 	{
 		return false;
 	}
@@ -158,7 +190,7 @@ bool FModManager::set_channel_group_enabled(const std::string& name, bool enable
 		return false;
 	}
 
-	if (!is_okay(iterator->second->setMute(!enabled)))
+	if (!is_okay(iterator->second->group_ptr->setMute(!enabled)))
 	{
 		return false;
 	}
@@ -176,12 +208,12 @@ bool FModManager::add_dsp_effect(const std::string& channel_group_name, const st
 	}
 
 	int num_dsp;
-	if(!is_okay(channel_group_iterator->second->getNumDSPs(&num_dsp)))
+	if (!is_okay(channel_group_iterator->second->group_ptr->getNumDSPs(&num_dsp)))
 	{
 		return false;
 	}
 
-	if(!is_okay(channel_group_iterator->second->addDSP(num_dsp, dsp_effect_iterator->second)))
+	if (!is_okay(channel_group_iterator->second->group_ptr->addDSP(num_dsp, dsp_effect_iterator->second)))
 	{
 		return false;
 	}
@@ -198,7 +230,7 @@ bool FModManager::remove_dsp_effect(const std::string& channel_group_name, const
 		return false;
 	}
 
-	if(!is_okay(channel_group_iterator->second->removeDSP(dsp_effect_iterator->second)))
+	if (!is_okay(channel_group_iterator->second->group_ptr->removeDSP(dsp_effect_iterator->second)))
 	{
 		return false;
 	}
@@ -232,7 +264,7 @@ bool FModManager::play_sound(const std::string& sound_name, const std::string& c
 	}
 
 	FMOD::Channel* channel;
-	last_result_ = system_->playSound(sound_iterator->second, channel_group_iterator->second, true, &channel);
+	last_result_ = system_->playSound(sound_iterator->second, channel_group_iterator->second->group_ptr, true, &channel);
 	if (!is_okay())
 	{
 		return false;
@@ -254,17 +286,29 @@ bool FModManager::create_dsp(const std::string& name, FMOD_DSP_TYPE dsp_type, co
 	FMOD::DSP* dsp;
 
 	//figure out the kind we are creating
-	switch (dsp_type)
+
+	if (!is_okay(system_->createDSPByType(dsp_type, &dsp))) {
+		return false;
+	}
+
+	if(!is_okay(dsp->setParameterFloat(0, value)))
 	{
-	case FMOD_DSP_TYPE_ECHO:
-		if (!is_okay(system_->createDSPByType(FMOD_DSP_TYPE_ECHO, &dsp))) {
-			return false;
-		}
-		break;
-	default:
 		return false;
 	}
 
 	dsps_.try_emplace(name, dsp);
+	return true;
+}
+
+bool FModManager::get_dsp(const std::string& name, FMOD::DSP** dsp)
+{
+	const auto dsp_effect_iterator = dsps_.find(name);
+	if (dsp_effect_iterator == dsps_.end())
+	{
+		return false;
+	}
+
+	*dsp = dsp_effect_iterator->second;
+
 	return true;
 }

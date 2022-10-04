@@ -14,7 +14,7 @@ constexpr int max_channels = 255;
 //initialize our sound manager
 FModManager fmod_manager;
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void key_callback(GLFWwindow* window, const int key, int scancode, const int action, const int mods)
 {
 	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
 	{
@@ -29,6 +29,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_2 && action == GLFW_PRESS)
 	{
 		fmod_manager.remove_dsp_effect("master", "echo");
+	}
+
+	if (key == GLFW_KEY_3 && action == GLFW_PRESS)
+	{
+		fmod_manager.add_dsp_effect("master", "dsp_pitch");
 	}
 }
 
@@ -82,33 +87,39 @@ int main(int argc, char* argv[])
 		return -2;
 	}
 
+	//set the volume to 50% (on load)
+	if(!fmod_manager.set_channel_group_volume("master", 0.5f))
+	{
+		return -3;
+	}
+
 	//set parents for channel groups
 	if(!fmod_manager.set_channel_group_parent("music", "master") || ! fmod_manager.set_channel_group_parent("fx", "master"))
 	{
-		return -3;
+		return -4;
 	}
 
 	//create a sound object
 	if(!fmod_manager.create_sound("bg", "./sounds/music/bg.wav", FMOD_LOOP_NORMAL))
 	{
-		return -4;
+		return -5;
 	}
 
 	if (!fmod_manager.create_sound("arrow", "./sounds/fx/air_raid.wav", FMOD_DEFAULT))
 	{
-		return -4;
+		return -5;
 	}
 
 	//play our bg sound
 	if(!fmod_manager.play_sound("bg", "music"))
 	{
-		return -5;
+		return -6;
 	}
 
 	//dsp effects
-	if(!fmod_manager.create_dsp("echo", FMOD_DSP_TYPE_ECHO, 500.0f))
+	if(!fmod_manager.create_dsp("echo", FMOD_DSP_TYPE_ECHO, 500.0f) || !fmod_manager.create_dsp("dsp_pitch", FMOD_DSP_TYPE_PITCHSHIFT, 1.0f))
 	{
-		return -6;
+		return -7;
 	}
 
 	//create sound ui

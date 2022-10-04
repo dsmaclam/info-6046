@@ -7,7 +7,7 @@ void SoundUI::render()
 	ImGui::Begin("Audio Settings");
 
 	{
-		FMOD::ChannelGroup* channel_group;
+		FModManager::ChannelGroup* channel_group;
 		if (!fmod_manager_->find_channel_group("master", &channel_group))
 		{
 			//cannot find channel group
@@ -41,7 +41,7 @@ void SoundUI::render()
 	}
 	
 	{
-		FMOD::ChannelGroup* channel_group;
+		FModManager::ChannelGroup* channel_group;
 		if (!fmod_manager_->find_channel_group("music", &channel_group))
 		{
 			//cannot find channel group
@@ -75,7 +75,7 @@ void SoundUI::render()
 	}
 
 	{
-		FMOD::ChannelGroup* channel_group;
+		FModManager::ChannelGroup* channel_group;
 		if (!fmod_manager_->find_channel_group("fx", &channel_group))
 		{
 			//cannot find channel group
@@ -106,6 +106,54 @@ void SoundUI::render()
 		if (!fmod_manager_->set_channel_group_enabled("fx", volume_enabled)) {
 			//failed
 		}
+	}
+
+	{
+		FModManager::ChannelGroup* channel_group;
+		if (!fmod_manager_->find_channel_group("fx", &channel_group))
+		{
+			//cannot find channel group
+			//do something...
+		}
+
+		ImGui::SliderFloat("master pan", &channel_group->current_pan, -1.0f, 1.0f, "%.2f");
+
+		if (!fmod_manager_->set_channel_group_pan("master", channel_group->current_pan))
+		{
+			//error
+			//do something?
+		}
+	}
+
+	{
+		FModManager::ChannelGroup* channel_group;
+		if (!fmod_manager_->find_channel_group("master", &channel_group))
+		{
+			//cannot find channel group
+			//do something...
+		}
+
+		float current_pitch;
+		channel_group->group_ptr->getPitch(&current_pitch);
+		ImGui::SliderFloat("master pitch (no dsp)", &current_pitch, 0.5f, 2.0f, "%.2f");
+		channel_group->group_ptr->setPitch(current_pitch);
+	}
+
+	{
+		FModManager::ChannelGroup* channel_group;
+		if (!fmod_manager_->find_channel_group("master", &channel_group))
+		{
+			//cannot find channel group
+			//do something...
+		}
+
+		ImGui::SliderFloat("master pitch (using dsp)", &channel_group->dsp_pitch, 0.5f, 2.0f, "%.2f");
+		FMOD::DSP* dsp;
+		if(!fmod_manager_->get_dsp("dsp_pitch", &dsp))
+		{
+			//dsp not found...
+		}
+		dsp->setParameterFloat(0, channel_group->dsp_pitch);
 	}
 
 	ImGui::End();
